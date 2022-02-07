@@ -1,7 +1,7 @@
 
 redis:
   server: "127.0.0.1:6379"
-  password: "123456"
+  password: ""
 mysql:
   dsn:
     userName: 'cclehui_test'
