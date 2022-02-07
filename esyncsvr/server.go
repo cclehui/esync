@@ -19,8 +19,12 @@ type Server struct {
 	configData  *config.Config
 }
 
+func GetServer() *Server {
+	return defaultServer
+}
+
 // 初始化server
-func GetServer(configData *config.Config, options ...OptionFunc) *Server {
+func NewServer(configData *config.Config, options ...OptionFunc) *Server {
 	defaultServerOnce.Do(func() {
 		svr := &Server{
 			configData: configData,

@@ -6,7 +6,7 @@ import (
 )
 
 func main() {
-	svr := esyncsvr.GetServer(config.InitConfigFromFile("./config/config.sample.yaml"))
+	svr := esyncsvr.NewServer(config.InitConfigFromFile("./config/config.sample.yaml"))
 
 	svr.Start()
 

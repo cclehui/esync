@@ -14,7 +14,7 @@ type Config struct {
 }
 
 func InitConfigFromFile(filePath string) *Config {
-	configData, err := (&Config{}).DecodeFromFile(filePath)
+	configData, err := (&Config{}).decodeFromFile(filePath)
 	if err != nil {
 		panic(err)
 	}
@@ -22,7 +22,7 @@ func InitConfigFromFile(filePath string) *Config {
 	return configData
 }
 
-func (c *Config) DecodeFromFile(filePath string) (*Config, error) {
+func (c *Config) decodeFromFile(filePath string) (*Config, error) {
 	fileData, err := ioutil.ReadFile(filePath)
 	if err != nil {
 		return c, err
