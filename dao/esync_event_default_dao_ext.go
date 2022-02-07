@@ -9,8 +9,9 @@ import (
 
 // 事件的option
 type EventOption struct {
-	DelaySeconds  []int // 延迟执行的秒数
-	MaxReTryCount int   // 最多retry执行的次数
+	DelaySeconds  []int `json:"delay_seconds"`   // 延迟执行的秒数
+	StartAt       int64 `json:"start_at"`        // 能开始执行的时间戳
+	MaxRetryCount int   `json:"max_retry_count"` // 最多retry执行的次数
 }
 
 func (myDao *EsyncEventDefaulDao) GetEventOption() (*EventOption, error) {
@@ -28,7 +29,7 @@ func (myDao *EsyncEventDefaulDao) GetEventOption() (*EventOption, error) {
 func (myDao *EsyncEventDefaulDao) IsCanRunNow() bool {
 	eventOption, err := myDao.GetEventOption()
 	if err == nil && eventOption != nil &&
-		eventInfoBase.StartAt > time.Now().Unix() { // 未到执行时间
+		eventOption.StartAt > time.Now().Unix() { // 未到执行时间
 		return false
 	}
 
