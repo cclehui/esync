@@ -6,14 +6,6 @@ import (
 	"github.com/cclehui/esync/dao"
 )
 
-// 事件数据结构
-type EventData struct {
-	EventType   string
-	UniqKey     string
-	EventData   string
-	EventOption *dao.EventOption
-}
-
 type HandlerParams struct {
 	EventID         int64
 	EventDefaultDao *dao.EsyncEventDefaultDao

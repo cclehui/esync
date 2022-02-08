@@ -1,6 +1,6 @@
 ```
 
-CREATE TABLE `event_default` (
+CREATE TABLE `esync_event_default` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT 'id',
   `event_date` int(10) unsigned NOT NULL DEFAULT '0' COMMENT '消息日期, 20210914',
   `event_type` varchar(64) NOT NULL DEFAULT '' COMMENT '消息类型',

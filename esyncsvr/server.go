@@ -45,7 +45,9 @@ func NewServer(configData *config.Config, options ...OptionFunc) *Server {
 }
 
 func (svr *Server) Start() {
-	fmt.Println("sssssssssssss")
+
+	fmt.Println("sssssssssssss:") // cclehui_test
+	select {}
 }
 
 func (svr *Server) GetMysqlClient() *daoongorm.DBClient {

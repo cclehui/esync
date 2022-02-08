@@ -17,6 +17,12 @@ type EventOption struct {
 	Persistent      bool  `json:"persistent"`        // 是否持久化， true false
 }
 
+func (myDao *EsyncEventDefaultDao) SetEventOption(option *EventOption) {
+	optionBytes, _ := json.Marshal(option)
+
+	myDao.EventOption = string(optionBytes)
+}
+
 func (myDao *EsyncEventDefaultDao) GetEventOption() (*EventOption, error) {
 	result := &EventOption{}
 

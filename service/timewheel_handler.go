@@ -178,13 +178,13 @@ func handleOneEvent(ctx context.Context, handlerParams *HandlerParams) (needRetr
 
 		eventOption, _ := handlerParams.EventDefaultDao.GetEventOption()
 
-		startTime := time.Unix(eventOption.StartAt, 0)
 		maxAliveTimeDiff := time.Second * time.Duration(eventOption.MaxAliveSeconds)
 
+		startTime := time.Unix(eventOption.StartAt, 0)
 		failTimeDiff := time.Now().Sub(startTime)
 
 		if oldHandlerInfo.FailCount >= eventOption.MaxRunNum ||
-			failTimeDiff >= maxAliveTimeDiff {
+			(eventOption.MaxAliveSeconds > 0 && failTimeDiff >= maxAliveTimeDiff) {
 			handlerParams.EventDefaultDao.EStatus = esyncdefine.EventFail
 			needRetry = false // 不需要再重试了 失败超过阈值
 
