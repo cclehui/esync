@@ -12,13 +12,15 @@ import (
 )
 
 func main() {
+	dao.InitDao()
+
 	svr := esyncsvr.NewServer(config.InitConfigFromFile("./config/config.sample.yaml"))
 
 	// daoongorm.SetGlobalCacheUtil(svr.GetRedisUtil())
 	// 启动 time_wheel
 	service.InitTimeWheel()
 
-	service.RegisterHandler("test_nop", &service.HandlerNop{})
+	service.RegisterHandler("test_nop", []service.HandlerBase{&service.HandlerNop{}})
 
 	go func() {
 		time.Sleep(time.Second * 3)
@@ -28,7 +30,7 @@ func main() {
 			EventData: "xxxxxxxxxxxx",
 			EventOption: &dao.EventOption{
 				DelaySeconds: []int{1, 3},
-				Persistent:   false,
+				Persistent:   true,
 			},
 		}
 

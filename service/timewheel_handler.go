@@ -81,16 +81,16 @@ func handleOneEvent(ctx context.Context, handlerParams *HandlerParams) (needRetr
 
 		redisPool := esyncsvr.GetServer().GetRedisPool()
 
-		redisLock := redsync.New(redisPool).
+		redisLock := redsync.New([]redsync.Pool{redisPool}).
 			NewMutex(fmt.Sprintf("esync:220228_event_handle:%d", handlerParams.EventID), lockOption...)
 
-		if err = redisLock.Lock(ctx); err != nil {
+		if err = redisLock.Lock(); err != nil {
 			needRetry = true
 			return
 		}
 
 		defer func() {
-			_ = redisLock.Unlock(ctx) // 释放锁
+			_, _ = redisLock.Unlock() // 释放锁
 		}()
 
 		// 开始事件处理 每次执行需要重新load 防止重复执行 (因为状态可能已经发生了变化)
@@ -103,7 +103,7 @@ func handleOneEvent(ctx context.Context, handlerParams *HandlerParams) (needRetr
 			return
 		}
 
-		if tempDao.IsNewRow() {
+		if tempDao.GetDaoBase().IsNewRow() {
 			err = errors.New("事件id不存在")
 			needRetry = false
 

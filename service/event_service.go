@@ -40,7 +40,7 @@ func (svc *EventService) AddEvent(ctx context.Context, eventData *EventData) err
 	eventDao.EventDate, _ = strconv.Atoi(time.Now().Format("20060102"))
 	eventDao.EventType = eventData.EventType
 	eventDao.UniqKey = eventData.UniqKey
-	eventDao.UniqKeyCRC32 = esyncutil.CRC32(eventData.UniqKey)
+	eventDao.UniqKeyCRC32 = int64(esyncutil.CRC32(eventData.UniqKey))
 	eventDao.EStatus = esyncdefine.EventNew
 
 	eventDao.SetEventOption(eventData.EventOption)
@@ -51,8 +51,8 @@ func (svc *EventService) AddEvent(ctx context.Context, eventData *EventData) err
 	}
 
 	// 持久化
-	if eventDao.EventOption.Persistent {
-		err = eventDao.Save(ctx)
+	if eventData.EventOption.Persistent {
+		err = eventDao.GetDaoBase().Save(ctx)
 		if err != nil {
 			return err
 		}
@@ -61,7 +61,7 @@ func (svc *EventService) AddEvent(ctx context.Context, eventData *EventData) err
 	}
 
 	// 添加到时间轮上等待执行
-	GetEventTimeWheel.AddTimer(eventDao.GetNextRetryDelayDuration(),
+	GetEventTimeWheel().AddTimer(eventDao.GetNextRetryDelayDuration(),
 		eventDao.GetTimerKey(), handlerParams)
 
 	return nil
