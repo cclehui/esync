@@ -15,6 +15,7 @@ var defaultServerOnce = sync.Once{}
 
 type Server struct {
 	mysqlClient *daoongorm.DBClient
+	redisPool   *redis.Pool
 	redisUtil   *redisutil.RedisUtil
 	configData  *config.Config
 }
@@ -55,6 +56,10 @@ func (svr *Server) GetRedisUtil() *redisutil.RedisUtil {
 	return svr.redisUtil
 }
 
+func (svr *Server) GetRedisPool() *redis.Pool {
+	return svr.redisPool
+}
+
 func (svr *Server) initMysqlClient() {
 	dbClientTmp, err := daoongorm.NewDBClient(svr.configData.Mysql)
 	if err != nil {
@@ -89,5 +94,6 @@ func (svr *Server) initRedisUtil() {
 		panic(err) // 配置异常panic 无法启动
 	}
 
+	svr.redisPool = redisPool
 	svr.redisUtil = redisutil.NewRedisUtil(redisPool)
 }

@@ -6,13 +6,11 @@ import (
 	"sync"
 	"time"
 
-	"git2.qingtingfm.com/infra/qt-boot/pkg/base/ctime"
-	"git2.qingtingfm.com/infra/qt-boot/pkg/log"
-	"git2.qingtingfm.com/infra/qt-boot/pkg/net/redlock"
-	"git2.qingtingfm.com/infra/qt-boot/pkg/net/sentry"
-	"git2.qingtingfm.com/podcaster/papi-go/dao"
-	"git2.qingtingfm.com/podcaster/papi-go/define"
-	"git2.qingtingfm.com/podcaster/papi-go/global"
+	"github.com/cclehui/esync/dao"
+	"github.com/cclehui/esync/esyncdefine"
+	"github.com/cclehui/esync/esyncsvr"
+	"github.com/cclehui/esync/esyncutil"
+	"github.com/go-redsync/redsync"
 	"github.com/pkg/errors"
 )
 
@@ -37,34 +35,31 @@ func timeWheelHandleEvent(handlerParamsIter interface{}) {
 	ctx := context.Background()
 
 	if !ok {
-		log.Errorc(ctx, "timeWheelHandleEvent, error:%s, %+v", "事件参数类型不正确", handlerParamsIter)
+		esyncutil.GetLogger().Errorf(ctx, "timeWheelHandleEvent, error:%s, %+v", "事件参数类型不正确", handlerParamsIter)
 
 		return
 	}
 
-	err, needRetry := handleOneEvent(ctx, handlerParams)
-
-	if err == nil {
-		return
-	}
+	needRetry := handleOneEvent(ctx, handlerParams)
 
 	// 添加到时间轮上等待再次执行 重试
-	if len(handlerParams.Durations) > 0 && needRetry {
-		firstDuration, nextDurationSlice := handlerParams.GetFirstAndNextDurations()
-		handlerParams.Durations = nextDurationSlice
-		handlerParams.EventDefaultDao = nil // 让dao重新load一次
+	if needRetry {
+		retryDelayDuration := handlerParams.EventDefaultDao.GetNextRetryDelayDuration()
 
-		GetEventTimeWheel().AddTimer(firstDuration, handlerParams.EventID, handlerParams)
+		GetEventTimeWheel().AddTimer(retryDelayDuration,
+			handlerParams.EventDefaultDao.GetTimerKey(), handlerParams)
 	}
 }
 
 // 事件处理
 // 有两个入口， 一个是从timewheel上触发， 另一个是从定时的 cron_monitor上触发
-func handleOneEvent(ctx context.Context, handlerParams *HandlerParams) (err error, needRetry bool) {
+func handleOneEvent(ctx context.Context, handlerParams *HandlerParams) (needRetry bool) {
 	needRetry = true
+	var err error
 
-	if handlerParams.EventData == nil || handlerParams.EventID < 1 {
-		log.Errorc(ctx, "handleEvent, error:%s, %+v", "事件参数不正确", handlerParams)
+	if handlerParams.EventDefaultDao == nil && handlerParams.EventID < 1 {
+		esyncutil.GetLogger().Errorf(ctx, "handleEvent, error:%s, %+v", "事件参数不正确", handlerParams)
+		needRetry = false
 
 		return
 	}
@@ -75,56 +70,68 @@ func handleOneEvent(ctx context.Context, handlerParams *HandlerParams) (err erro
 		}
 
 		if err != nil {
-			log.Errorc(ctx, "handleEvent, error:%+v, %+v", err, handlerParams)
+			esyncutil.GetLogger().Errorf(ctx, "handleEvent, error:%+v, %s", err, handlerParams.LogIDStr())
 		}
 	}()
 
-	// 锁住当前事件 防止并发
-	redisPool := global.GetDao().GetRedisDefault()
-	configLock := &redlock.Config{
-		ExpiryTime: ctime.Duration(time.Second * 30),
-		Tries:      1,
+	// 持久化event 需要加锁 防止并发
+	if handlerParams.EventID > 0 {
+		lockOption := []redsync.Option{redsync.SetExpiry(time.Second * 30),
+			redsync.SetTries(1)}
+
+		redisPool := esyncsvr.GetServer().GetRedisPool()
+
+		redisLock := redsync.New(redisPool).
+			NewMutex(fmt.Sprintf("esync:220228_event_handle:%d", handlerParams.EventID), lockOption...)
+
+		if err = redisLock.Lock(ctx); err != nil {
+			needRetry = true
+			return
+		}
+
+		defer func() {
+			_ = redisLock.Unlock(ctx) // 释放锁
+		}()
+
+		// 开始事件处理 每次执行需要重新load 防止重复执行 (因为状态可能已经发生了变化)
+		tempDao, err2 := dao.NewEsyncEventDefaultDao(ctx,
+			&dao.EsyncEventDefaultDao{ID: handlerParams.EventID}, false)
+		if err2 != nil {
+			err = err2
+			needRetry = true
+
+			return
+		}
+
+		if tempDao.IsNewRow() {
+			err = errors.New("事件id不存在")
+			needRetry = false
+
+			return
+		}
+
+		handlerParams.EventDefaultDao = tempDao
 	}
 
-	redisLock := redlock.New(configLock, redisPool).
-		NewMutex(fmt.Sprintf("210916_event_handle:%d", handlerParams.EventID))
-	if err = redisLock.Lock(ctx); err != nil {
-		return
-	}
-
-	defer func() {
-		_ = redisLock.Unlock(ctx) // 释放锁
-	}()
-
-	// 开始事件处理 每次执行需要重新load 防止重复执行 (因为状态可能已经发生了变化)
-	tempDao, err2 := dao.NewEventDefaultDao(ctx, &dao.EventDefaultDao{ID: handlerParams.EventID}, false)
-	if err2 != nil {
-		err = err2
-
-		return
-	}
-
-	if tempDao.IsNewRow() {
-		err = errors.New("事件id不存在")
+	if handlerParams.EventDefaultDao == nil {
+		esyncutil.GetLogger().Errorf(ctx, "handleEvent, error, EventDefaultDao is nil")
 		needRetry = false
 
 		return
 	}
 
-	handlerParams.EventDefaultDao = tempDao
+	logSuffix := fmt.Sprintf("esync, handleEvent:%s", handlerParams.LogIDStr())
 
-	logSuffix := fmt.Sprintf("event:%d", handlerParams.EventID)
-
-	if handlerParams.EventDefaultDao.EStatus != define.EventNew {
-		log.Infoc(ctx, "事件已无需处理, %s", logSuffix)
+	if handlerParams.EventDefaultDao.EStatus != esyncdefine.EventNew {
+		esyncutil.GetLogger().Infof(ctx, "事件已无需处理, %s", logSuffix)
 
 		needRetry = false
 
 		return
 	}
 
-	if !handlerParams.EventDefaultDao.CanEventHandleNow() {
-		log.Infoc(ctx, "事件未到执行时间, %s", logSuffix)
+	if !handlerParams.EventDefaultDao.IsCanRunNow() {
+		esyncutil.GetLogger().Infof(ctx, "事件未到执行时间, %s", logSuffix)
 
 		needRetry = true
 
@@ -147,40 +154,51 @@ func handleOneEvent(ctx context.Context, handlerParams *HandlerParams) (err erro
 		err2 := handler.Do(ctx, handlerParams)
 
 		if err2 != nil {
-			log.Errorc(ctx, "handler:%s, 处理异常, %+v, %s", handler.GetHandlerID(), err2, logSuffix)
+			esyncutil.GetLogger().Errorf(ctx, "handler:%s, 处理异常, %+v, %s", handler.GetHandlerID(), err2, logSuffix)
 			failHandlerList = append(failHandlerList, handler)
 		} else {
 			oldHandlerInfo.SucceedHandlers = append(oldHandlerInfo.SucceedHandlers, handler.GetHandlerID())
-			log.Infoc(ctx, "handler:%s, 处理成功, %s", handler.GetHandlerID(), logSuffix)
+			esyncutil.GetLogger().Infof(ctx, "handler:%s, 处理成功, %s", handler.GetHandlerID(), logSuffix)
 		}
 	}
+
+	// 运行处理的时间记录
+	oldHandlerInfo.RunTs = append(oldHandlerInfo.RunTs, time.Now().Unix())
 
 	// 事件状态处理
 
 	if len(failHandlerList) < 1 { // 成功
-		log.Infoc(ctx, "全部处理成功, %s", logSuffix)
+		esyncutil.GetLogger().Infof(ctx, "全部处理成功, %s", logSuffix)
 
 		needRetry = false
-		handlerParams.EventDefaultDao.EStatus = define.EventSuccess
+		handlerParams.EventDefaultDao.EStatus = esyncdefine.EventSuccess
 	} else {
 		err = errors.New(fmt.Sprintf("%d个handler处理失败", len(failHandlerList)))
 		oldHandlerInfo.FailCount += 1
 
-		failTimeDiff := time.Now().Sub(handlerParams.EventDefaultDao.CreatedAt)
+		eventOption, _ := handlerParams.EventDefaultDao.GetEventOption()
 
-		if failTimeDiff > time.Second*3600*12 ||
-			(oldHandlerInfo.FailCount >= 10 && failTimeDiff >= time.Second*3600*2) {
-			handlerParams.EventDefaultDao.EStatus = define.EventFail
+		startTime := time.Unix(eventOption.StartAt, 0)
+		maxAliveTimeDiff := time.Second * time.Duration(eventOption.MaxAliveSeconds)
+
+		failTimeDiff := time.Now().Sub(startTime)
+
+		if oldHandlerInfo.FailCount >= eventOption.MaxRunNum ||
+			failTimeDiff >= maxAliveTimeDiff {
+			handlerParams.EventDefaultDao.EStatus = esyncdefine.EventFail
 			needRetry = false // 不需要再重试了 失败超过阈值
 
-			// 发sentry 报警
-			sentry.CaptureWithTags(ctx, errors.New(fmt.Sprintf("失败次数超过阈值,event处理失败:%s", logSuffix)))
+			esyncutil.GetLogger().Errorf(ctx, "失败次数超过阈值,event处理失败:%s", logSuffix)
+		} else {
+			needRetry = true
 		}
 	}
 
 	handlerParams.EventDefaultDao.SetHandlerInfo(oldHandlerInfo)
 
-	_ = handlerParams.EventDefaultDao.Save(ctx)
+	if handlerParams.EventID > 0 { // 更新持久化数据状态
+		_ = handlerParams.EventDefaultDao.GetDaoBase().Save(ctx)
+	}
 
-	return err, needRetry
+	return needRetry
 }

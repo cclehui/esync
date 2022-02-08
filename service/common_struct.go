@@ -1,9 +1,9 @@
 package service
 
 import (
-	"time"
+	"fmt"
 
-	"git2.qingtingfm.com/podcaster/papi-go/dao"
+	"github.com/cclehui/esync/dao"
 )
 
 // 事件数据结构
@@ -16,24 +16,14 @@ type EventData struct {
 
 type HandlerParams struct {
 	EventID         int64
-	EventDefaultDao *dao.EventDefaultDao
-	EventData       *EventData
-	Durations       []time.Duration // 添加到时间轮上执行的周期 递增
+	EventDefaultDao *dao.EsyncEventDefaultDao
 }
 
-func (hp *HandlerParams) GetFirstAndNextDurations() (time.Duration, []time.Duration) {
-	resSlice := make([]time.Duration, 0)
-
-	if len(hp.Durations) < 1 {
-		return time.Duration(0), resSlice
+func (hp *HandlerParams) LogIDStr() string {
+	if hp.EventID > 0 {
+		return fmt.Sprintf("event_id:%d", hp.EventID)
 	}
 
-	firstDuration := hp.Durations[0]
-
-	for _, curDuration := range hp.Durations[1:] {
-		tempDuration := curDuration - firstDuration
-		resSlice = append(resSlice, tempDuration)
-	}
-
-	return firstDuration, resSlice
+	return fmt.Sprintf("event_type:%s, uniqkey:%s",
+		hp.EventDefaultDao.EventType, hp.EventDefaultDao.UniqKey)
 }

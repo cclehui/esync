@@ -8,7 +8,7 @@ import (
 	"github.com/cclehui/esync/esyncsvr"
 )
 
-type EsyncEventDefaulDao struct {
+type EsyncEventDefaultDao struct {
 	ID           int64     `gorm:"column:id;primaryKey" structs:"id" json:"id"`
 	EventDate    int       `gorm:"column:event_date" structs:"event_date" json:"event_date"`
 	EventType    string    `gorm:"column:event_type" structs:"event_type" json:"event_type"`
@@ -24,7 +24,8 @@ type EsyncEventDefaulDao struct {
 	daoBase *daoongorm.DaoBase
 }
 
-func NewEsyncEventDefaulDao(ctx context.Context, myDao *EsyncEventDefaulDao, readOnly bool, options ...daoongorm.Option) (*EsyncEventDefaulDao, error) {
+func NewEsyncEventDefaultDao(ctx context.Context, myDao *EsyncEventDefaultDao, readOnly bool, options ...daoongorm.Option) (*EsyncEventDefaultDao, error) {
+	options = append(options, daoongorm.OptionSetUseCache(false))
 	daoBase, err := daoongorm.NewDaoBase(ctx, myDao, readOnly, options...)
 
 	myDao.daoBase = daoBase
@@ -33,8 +34,9 @@ func NewEsyncEventDefaulDao(ctx context.Context, myDao *EsyncEventDefaulDao, rea
 }
 
 // 支持事务
-func NewEsyncEventDefaulDaoWithTX(ctx context.Context,
-	myDao *EsyncEventDefaulDao, tx *daoongorm.DBClient, options ...daoongorm.Option) (*EsyncEventDefaulDao, error) {
+func NewEsyncEventDefaultDaoWithTX(ctx context.Context,
+	myDao *EsyncEventDefaultDao, tx *daoongorm.DBClient, options ...daoongorm.Option) (*EsyncEventDefaultDao, error) {
+	options = append(options, daoongorm.OptionSetUseCache(false))
 
 	daoBase, err := daoongorm.NewDaoBaseWithTX(ctx, myDao, tx, options...)
 
@@ -43,22 +45,22 @@ func NewEsyncEventDefaulDaoWithTX(ctx context.Context,
 	return myDao, err
 }
 
-func (myDao *EsyncEventDefaulDao) DBName() string {
+func (myDao *EsyncEventDefaultDao) DBName() string {
 	return esyncsvr.GetServer().GetMysqlClient().GetDBClientConfig().DSN.DBName
 }
 
-func (myDao *EsyncEventDefaulDao) TableName() string {
+func (myDao *EsyncEventDefaultDao) TableName() string {
 	return EventDefaultTableName
 }
 
-func (myDao *EsyncEventDefaulDao) DBClient() daoongorm.DBClientInterface {
+func (myDao *EsyncEventDefaultDao) DBClient() daoongorm.DBClientInterface {
 	return esyncsvr.GetServer().GetMysqlClient()
 }
 
-func (myDao *EsyncEventDefaulDao) GetDaoBase() *daoongorm.DaoBase {
+func (myDao *EsyncEventDefaultDao) GetDaoBase() *daoongorm.DaoBase {
 	return myDao.daoBase
 }
 
-func (myDao *EsyncEventDefaulDao) SetDaoBase(myDaoBase *daoongorm.DaoBase) {
+func (myDao *EsyncEventDefaultDao) SetDaoBase(myDaoBase *daoongorm.DaoBase) {
 	myDao.daoBase = myDaoBase
 }

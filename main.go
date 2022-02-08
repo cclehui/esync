@@ -8,6 +8,8 @@ import (
 func main() {
 	svr := esyncsvr.NewServer(config.InitConfigFromFile("./config/config.sample.yaml"))
 
+	// daoongorm.SetGlobalCacheUtil(svr.GetRedisUtil())
+
 	svr.Start()
 
 }
