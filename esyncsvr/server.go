@@ -4,22 +4,15 @@ import (
 	"fmt"
 	"sync"
 
-	daoongorm "github.com/cclehui/dao-on-gorm"
 	"github.com/cclehui/esync/config"
 	"github.com/cclehui/esync/esyncsvr/dao"
 	"github.com/cclehui/esync/esyncsvr/service"
-	redisutil "github.com/cclehui/redis-util"
-	"github.com/gomodule/redigo/redis"
 )
 
 var defaultServer *Server
 var defaultServerOnce = sync.Once{}
 
-type Server struct {
-	mysqlClient *daoongorm.DBClient
-	redisPool   *redis.Pool
-	redisUtil   *redisutil.RedisUtil
-}
+type Server struct{}
 
 func GetServer() *Server {
 	return defaultServer

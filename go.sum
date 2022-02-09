@@ -1,6 +1,5 @@
 github.com/cclehui/dao-on-gorm v0.0.0-20220129103520-c902e5625c65 h1:gj8JkjACmVLtKFPTrtOuGE27jNzPq7CKLZorNaaJX9c=
 github.com/cclehui/dao-on-gorm v0.0.0-20220129103520-c902e5625c65/go.mod h1:4yjt/y10iz/yr8OPeypYGro8aSBz8y5qaWAxRMhnRP0=
-github.com/cclehui/redis-util v0.0.2 h1:BfSrBvcpyJ1Ptoopxhs52RTtYqsJMoNa9kMEGG9l9ao=
 github.com/cclehui/redis-util v0.0.2/go.mod h1:b3XCTXao9oJg5GLLw/LmJ7++mbxRHmPU283ATskCWYI=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=

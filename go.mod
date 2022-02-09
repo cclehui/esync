@@ -4,7 +4,6 @@ go 1.16
 
 require (
 	github.com/cclehui/dao-on-gorm v0.0.0-20220129103520-c902e5625c65
-	github.com/cclehui/redis-util v0.0.2
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/go-redsync/redsync v1.4.2
 	github.com/gomodule/redigo v2.0.0+incompatible
