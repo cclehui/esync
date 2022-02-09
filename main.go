@@ -9,11 +9,11 @@ import (
 	"github.com/cclehui/esync/esyncsvr"
 	"github.com/cclehui/esync/esyncsvr/dao"
 	"github.com/cclehui/esync/esyncsvr/handler"
-	"github.com/cclehui/esync/esyncsvr/service"
+	"github.com/cclehui/esync/esyncsvr/esyncsvc"
 )
 
 func main() {
-	service.RegisterHandler("test_nop_handler", []service.HandlerBase{&handler.NopHandler{}})
+	esyncsvc.RegisterHandler("test_nop_handler", []esyncsvc.HandlerBase{&handler.NopHandler{}})
 
 	go func() {
 		svr := esyncsvr.NewServer(config.InitConfigFromFile("./config/config.sample.yaml"))
@@ -22,7 +22,7 @@ func main() {
 
 	time.Sleep(time.Second * 3)
 
-	eventData := &service.EventData{
+	eventData := &esyncsvc.EventData{
 		EventType: "test_nop_handler",
 		EventData: "xxxxxxxxxxxx",
 		EventOption: &dao.EventOption{
@@ -33,7 +33,7 @@ func main() {
 
 	ctx := context.Background()
 
-	eventSvc := &service.EventService{}
+	eventSvc := &esyncsvc.EventService{}
 	err := eventSvc.AddEvent(ctx, eventData)
 
 	fmt.Println("mmmmmmmmmmmmmm:", err) // cclehui_test

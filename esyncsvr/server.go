@@ -6,7 +6,7 @@ import (
 
 	"github.com/cclehui/esync/config"
 	"github.com/cclehui/esync/esyncsvr/dao"
-	"github.com/cclehui/esync/esyncsvr/service"
+	"github.com/cclehui/esync/esyncsvr/esyncsvc"
 )
 
 var defaultServer *Server
@@ -38,7 +38,7 @@ func NewServer(configData *config.Config, options ...OptionFunc) *Server {
 
 func (svr *Server) Start() {
 	dao.InitDao()
-	service.InitTimeWheel()
+	esyncsvc.InitTimeWheel()
 
 	fmt.Println("sssssssssssss:") // cclehui_test
 	select {}

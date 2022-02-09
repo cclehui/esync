@@ -1,4 +1,4 @@
-package service
+package esyncsvc
 
 import (
 	"context"

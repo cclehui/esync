@@ -3,7 +3,7 @@ package handler
 import (
 	"context"
 
-	"github.com/cclehui/esync/esyncsvr/service"
+	"github.com/cclehui/esync/esyncsvr/esyncsvc"
 	"github.com/cclehui/esync/esyncutil"
 )
 
@@ -16,7 +16,7 @@ func (handler *FailHandler) GetHandlerID() string {
 	return "esync_fail_220209"
 }
 
-func (handler *FailHandler) Do(ctx context.Context, params *service.HandlerParams) error {
+func (handler *FailHandler) Do(ctx context.Context, params *esyncsvc.HandlerParams) error {
 	esyncutil.GetLogger().Infof(ctx, "FailHandler 执行......")
 	return nil
 }
