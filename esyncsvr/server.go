@@ -4,9 +4,11 @@ import (
 	"fmt"
 	"sync"
 
+	daoongorm "github.com/cclehui/dao-on-gorm"
 	"github.com/cclehui/esync/config"
 	"github.com/cclehui/esync/esyncsvr/esyncdao"
 	"github.com/cclehui/esync/esyncsvr/esyncsvc"
+	"github.com/cclehui/esync/esyncutil"
 )
 
 var defaultServer *Server
@@ -37,6 +39,8 @@ func NewServer(configData *config.Config, options ...OptionFunc) *Server {
 }
 
 func (svr *Server) Start() {
+	daoongorm.SetLogger(esyncutil.GetLogger())
+
 	esyncdao.InitDao()
 	esyncsvc.InitTimeWheel()
 
