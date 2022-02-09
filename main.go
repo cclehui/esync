@@ -6,43 +6,35 @@ import (
 	"time"
 
 	"github.com/cclehui/esync/config"
-	"github.com/cclehui/esync/dao"
 	"github.com/cclehui/esync/esyncsvr"
-	"github.com/cclehui/esync/service"
+	"github.com/cclehui/esync/esyncsvr/dao"
+	"github.com/cclehui/esync/esyncsvr/service"
 )
 
 func main() {
-	dao.InitDao()
-
-	svr := esyncsvr.NewServer(config.InitConfigFromFile("./config/config.sample.yaml"))
-
-	// daoongorm.SetGlobalCacheUtil(svr.GetRedisUtil())
-	// 启动 time_wheel
-	service.InitTimeWheel()
-
 	service.RegisterHandler("test_nop", []service.HandlerBase{&service.HandlerNop{}})
 
 	go func() {
-		time.Sleep(time.Second * 3)
-
-		eventData := &service.EventData{
-			EventType: "test_nop",
-			EventData: "xxxxxxxxxxxx",
-			EventOption: &dao.EventOption{
-				DelaySeconds: []int{1, 3},
-				Persistent:   true,
-			},
-		}
-
-		ctx := context.Background()
-
-		eventSvc := &service.EventService{}
-		err := eventSvc.AddEvent(ctx, eventData)
-
-		fmt.Println("mmmmmmmmmmmmmm:", err) // cclehui_test
-
+		svr := esyncsvr.NewServer(config.InitConfigFromFile("./config/config.sample.yaml"))
+		svr.Start()
 	}()
 
-	svr.Start()
+	time.Sleep(time.Second * 3)
+
+	eventData := &service.EventData{
+		EventType: "test_nop",
+		EventData: "xxxxxxxxxxxx",
+		EventOption: &dao.EventOption{
+			DelaySeconds: []int{1, 3},
+			Persistent:   true,
+		},
+	}
+
+	ctx := context.Background()
+
+	eventSvc := &service.EventService{}
+	err := eventSvc.AddEvent(ctx, eventData)
+
+	fmt.Println("mmmmmmmmmmmmmm:", err) // cclehui_test
 
 }

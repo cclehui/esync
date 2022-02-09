@@ -6,9 +6,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/cclehui/esync/dao"
 	"github.com/cclehui/esync/esyncdefine"
-	"github.com/cclehui/esync/esyncsvr"
+	"github.com/cclehui/esync/esyncsvr/dao"
 	"github.com/cclehui/esync/esyncutil"
 	"github.com/go-redsync/redsync"
 	"github.com/pkg/errors"
@@ -79,7 +78,7 @@ func handleOneEvent(ctx context.Context, handlerParams *HandlerParams) (needRetr
 		lockOption := []redsync.Option{redsync.SetExpiry(time.Second * 30),
 			redsync.SetTries(1)}
 
-		redisPool := esyncsvr.GetServer().GetRedisPool()
+		redisPool := dao.GetStorage().GetRedisPool()
 
 		redisLock := redsync.New([]redsync.Pool{redisPool}).
 			NewMutex(fmt.Sprintf("esync:220228_event_handle:%d", handlerParams.EventID), lockOption...)

@@ -5,7 +5,6 @@ import (
 	"time"
 
 	daoongorm "github.com/cclehui/dao-on-gorm"
-	"github.com/cclehui/esync/esyncsvr"
 )
 
 type EsyncEventDefaultDao struct {
@@ -46,7 +45,7 @@ func NewEsyncEventDefaultDaoWithTX(ctx context.Context,
 }
 
 func (myDao *EsyncEventDefaultDao) DBName() string {
-	return esyncsvr.GetServer().GetMysqlClient().GetDBClientConfig().DSN.DBName
+	return GetStorage().GetMysqlClient().GetDBClientConfig().DSN.DBName
 }
 
 func (myDao *EsyncEventDefaultDao) TableName() string {
@@ -54,7 +53,7 @@ func (myDao *EsyncEventDefaultDao) TableName() string {
 }
 
 func (myDao *EsyncEventDefaultDao) DBClient() daoongorm.DBClientInterface {
-	return esyncsvr.GetServer().GetMysqlClient()
+	return GetStorage().GetMysqlClient()
 }
 
 func (myDao *EsyncEventDefaultDao) GetDaoBase() *daoongorm.DaoBase {

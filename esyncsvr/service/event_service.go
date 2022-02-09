@@ -5,8 +5,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/cclehui/esync/dao"
 	"github.com/cclehui/esync/esyncdefine"
+	"github.com/cclehui/esync/esyncsvr/dao"
 	"github.com/cclehui/esync/esyncutil"
 	"github.com/pkg/errors"
 )

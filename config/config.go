@@ -8,6 +8,8 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+var Conf *Config
+
 type Config struct {
 	Mysql *daoongorm.DBClientConfig `yaml:"mysql"`
 	Redis *Redis                    `yaml:"redis"`

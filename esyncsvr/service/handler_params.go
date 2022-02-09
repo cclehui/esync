@@ -3,7 +3,7 @@ package service
 import (
 	"fmt"
 
-	"github.com/cclehui/esync/dao"
+	"github.com/cclehui/esync/esyncsvr/dao"
 )
 
 type HandlerParams struct {
