@@ -41,8 +41,9 @@ func NewServer(configData *config.Config, options ...OptionFunc) *Server {
 func (svr *Server) Start() {
 	daoongorm.SetLogger(esyncutil.GetLogger())
 
-	esyncdao.InitDao()
-	esyncsvc.InitTimeWheel()
+	esyncdao.InitDao() // dao 注册
+
+	esyncsvc.InitTimeWheel() // 启动时间轮等待event
 
 	fmt.Println("sssssssssssss:") // cclehui_test
 	select {}

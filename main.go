@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/cclehui/esync/config"
@@ -13,12 +12,14 @@ import (
 )
 
 const (
-	EtypeTestNop = "esync_test_nop"
-	// EtypeTestFail = "esync_test_fail"
+	EtypeTestNop  = "esync_test_nop"
+	EtypeTestFail = "esync_test_fail"
 )
 
 func main() {
 	esyncsvc.RegisterHandler(EtypeTestNop, []esyncsvc.HandlerBase{&handler.NopHandler{}})
+	esyncsvc.RegisterHandler(EtypeTestFail,
+		[]esyncsvc.HandlerBase{&handler.FailHandler{FailNum: 3}})
 
 	go func() {
 		svr := esyncsvr.NewServer(config.InitConfigFromFile("./config/config.sample.yaml"))
@@ -26,6 +27,9 @@ func main() {
 	}()
 
 	time.Sleep(time.Second * 3)
+
+	eventSvc := &esyncsvc.EventService{}
+	ctx := context.Background()
 
 	eventData := &esyncsvc.EventData{
 		EventType: EtypeTestNop,
@@ -36,12 +40,18 @@ func main() {
 		},
 	}
 
-	ctx := context.Background()
+	_ = eventSvc.AddEvent(ctx, eventData)
 
-	eventSvc := &esyncsvc.EventService{}
-	err := eventSvc.AddEvent(ctx, eventData)
+	eventData2 := &esyncsvc.EventData{
+		EventType: EtypeTestFail,
+		EventData: "ffffffffffff",
+		EventOption: &esyncdao.EventOption{
+			DelaySeconds: []int{0, 3, 5},
+			Persistent:   true,
+		},
+	}
 
-	fmt.Println("mmmmmmmmmmmmmm:", err) // cclehui_test
+	_ = eventSvc.AddEvent(ctx, eventData2)
 
 	select {}
 }

@@ -3,6 +3,7 @@ package esyncsvc
 import (
 	"context"
 	"fmt"
+	"strings"
 	"sync"
 	"time"
 
@@ -71,7 +72,7 @@ func handleOneEvent(ctx context.Context, handlerParams *HandlerParams) (needRetr
 		}
 
 		if err != nil {
-			esyncutil.GetLogger().Errorf(ctx, "handleEvent, error:%+v, %s", err, handlerParams.LogIDStr())
+			esyncutil.GetLogger().Errorf(ctx, "handleEvent, %s, error:%+v", handlerParams.LogIDStr(), err)
 		}
 	}()
 
@@ -175,7 +176,8 @@ func handleOneEvent(ctx context.Context, handlerParams *HandlerParams) (needRetr
 		needRetry = false
 		handlerParams.EventDefaultDao.EStatus = esyncdefine.EventSuccess
 	} else {
-		err = errors.New(fmt.Sprintf("%d个handler处理失败", len(failHandlerList)))
+		err = errors.New(fmt.Sprintf("%d个handler处理失败:%s",
+			len(failHandlerList), failHandlerIDsStr(failHandlerList)))
 		oldHandlerInfo.FailCount += 1
 
 		eventOption, _ := handlerParams.EventDefaultDao.GetEventOption()
@@ -203,4 +205,14 @@ func handleOneEvent(ctx context.Context, handlerParams *HandlerParams) (needRetr
 	}
 
 	return needRetry
+}
+
+func failHandlerIDsStr(failHandlerList []HandlerBase) string {
+
+	failHandlerIDs := make([]string, 0)
+	for _, handlerTmp := range failHandlerList {
+		failHandlerIDs = append(failHandlerIDs, handlerTmp.GetHandlerID())
+	}
+
+	return strings.Join(failHandlerIDs, ",")
 }
