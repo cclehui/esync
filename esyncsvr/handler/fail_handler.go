@@ -22,7 +22,7 @@ func (handler *FailHandler) Do(ctx context.Context, params *esyncsvc.HandlerPara
 	handlerInfo, _ := params.EventDefaultDao.GetHandlerInfo()
 
 	if handler.FailNum > 0 && handlerInfo.FailCount >= handler.FailNum {
-		esyncutil.GetLogger().Infof(ctx, "FailHandler 第:%d次执行, 成功", handlerInfo.FailCount+1)
+		esyncutil.GetLogger().Infof(ctx, "FailHandler 第%d次执行, 成功", handlerInfo.FailCount+1)
 		return nil
 	}
 

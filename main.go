@@ -19,7 +19,7 @@ const (
 func main() {
 	esyncsvc.RegisterHandler(EtypeTestNop, []esyncsvc.HandlerBase{&handler.NopHandler{}})
 	esyncsvc.RegisterHandler(EtypeTestFail,
-		[]esyncsvc.HandlerBase{&handler.FailHandler{FailNum: 3}})
+		[]esyncsvc.HandlerBase{&handler.FailHandler{FailNum: 30}})
 
 	go func() {
 		svr := esyncsvr.NewServer(config.InitConfigFromFile("./config/config.sample.yaml"))
@@ -46,7 +46,7 @@ func main() {
 		EventType: EtypeTestFail,
 		EventData: "ffffffffffff",
 		EventOption: &esyncdao.EventOption{
-			DelaySeconds: []int{0, 3, 5},
+			DelaySeconds: []int{0, 3, 5, 7, 9, 11},
 			Persistent:   true,
 		},
 	}

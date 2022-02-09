@@ -192,7 +192,8 @@ func handleOneEvent(ctx context.Context, handlerParams *HandlerParams) (needRetr
 			handlerParams.EventDefaultDao.EStatus = esyncdefine.EventFail
 			needRetry = false // 不需要再重试了 失败超过阈值
 
-			esyncutil.GetLogger().Errorf(ctx, "失败次数超过阈值,event处理失败:%s", logSuffix)
+			esyncutil.GetLogger().Errorf(ctx,
+				"失败次数超过阈值,failhandlers:%s,:%s", failHandlerIDsStr(failHandlerList), logSuffix)
 		} else {
 			needRetry = true
 		}
