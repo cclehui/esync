@@ -1,4 +1,4 @@
-package dao
+package esyncdao
 
 import (
 	"encoding/json"

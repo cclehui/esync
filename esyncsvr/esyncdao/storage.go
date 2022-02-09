@@ -1,4 +1,4 @@
-package dao
+package esyncdao
 
 import (
 	daoongorm "github.com/cclehui/dao-on-gorm"

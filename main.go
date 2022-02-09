@@ -7,9 +7,9 @@ import (
 
 	"github.com/cclehui/esync/config"
 	"github.com/cclehui/esync/esyncsvr"
-	"github.com/cclehui/esync/esyncsvr/dao"
-	"github.com/cclehui/esync/esyncsvr/handler"
+	"github.com/cclehui/esync/esyncsvr/esyncdao"
 	"github.com/cclehui/esync/esyncsvr/esyncsvc"
+	"github.com/cclehui/esync/esyncsvr/handler"
 )
 
 func main() {
@@ -25,7 +25,7 @@ func main() {
 	eventData := &esyncsvc.EventData{
 		EventType: "test_nop_handler",
 		EventData: "xxxxxxxxxxxx",
-		EventOption: &dao.EventOption{
+		EventOption: &esyncdao.EventOption{
 			DelaySeconds: []int{1, 3},
 			Persistent:   true,
 		},

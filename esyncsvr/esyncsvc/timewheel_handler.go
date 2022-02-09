@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/cclehui/esync/esyncdefine"
-	"github.com/cclehui/esync/esyncsvr/dao"
+	"github.com/cclehui/esync/esyncsvr/esyncdao"
 	"github.com/cclehui/esync/esyncutil"
 	"github.com/go-redsync/redsync"
 	"github.com/pkg/errors"
@@ -78,7 +78,7 @@ func handleOneEvent(ctx context.Context, handlerParams *HandlerParams) (needRetr
 		lockOption := []redsync.Option{redsync.SetExpiry(time.Second * 30),
 			redsync.SetTries(1)}
 
-		redisPool := dao.GetStorage().GetRedisPool()
+		redisPool := esyncdao.GetStorage().GetRedisPool()
 
 		redisLock := redsync.New([]redsync.Pool{redisPool}).
 			NewMutex(fmt.Sprintf("esync:220228_event_handle:%d", handlerParams.EventID), lockOption...)
@@ -93,8 +93,8 @@ func handleOneEvent(ctx context.Context, handlerParams *HandlerParams) (needRetr
 		}()
 
 		// 开始事件处理 每次执行需要重新load 防止重复执行 (因为状态可能已经发生了变化)
-		tempDao, err2 := dao.NewEsyncEventDefaultDao(ctx,
-			&dao.EsyncEventDefaultDao{ID: handlerParams.EventID}, false)
+		tempDao, err2 := esyncdao.NewEsyncEventDefaultDao(ctx,
+			&esyncdao.EsyncEventDefaultDao{ID: handlerParams.EventID}, false)
 		if err2 != nil {
 			err = err2
 			needRetry = true

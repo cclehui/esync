@@ -5,7 +5,7 @@ import (
 	"sync"
 
 	"github.com/cclehui/esync/config"
-	"github.com/cclehui/esync/esyncsvr/dao"
+	"github.com/cclehui/esync/esyncsvr/esyncdao"
 	"github.com/cclehui/esync/esyncsvr/esyncsvc"
 )
 
@@ -22,7 +22,7 @@ func GetServer() *Server {
 func NewServer(configData *config.Config, options ...OptionFunc) *Server {
 	defaultServerOnce.Do(func() {
 		config.Conf = configData
-		dao.InitStorage() // 初始化 mysql 和redis
+		esyncdao.InitStorage() // 初始化 mysql 和redis
 
 		svr := &Server{}
 
@@ -37,7 +37,7 @@ func NewServer(configData *config.Config, options ...OptionFunc) *Server {
 }
 
 func (svr *Server) Start() {
-	dao.InitDao()
+	esyncdao.InitDao()
 	esyncsvc.InitTimeWheel()
 
 	fmt.Println("sssssssssssss:") // cclehui_test

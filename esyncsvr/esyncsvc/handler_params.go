@@ -3,12 +3,12 @@ package esyncsvc
 import (
 	"fmt"
 
-	"github.com/cclehui/esync/esyncsvr/dao"
+	"github.com/cclehui/esync/esyncsvr/esyncdao"
 )
 
 type HandlerParams struct {
 	EventID         int64
-	EventDefaultDao *dao.EsyncEventDefaultDao
+	EventDefaultDao *esyncdao.EsyncEventDefaultDao
 }
 
 func (hp *HandlerParams) LogIDStr() string {

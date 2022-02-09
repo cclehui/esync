@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/cclehui/esync/esyncdefine"
-	"github.com/cclehui/esync/esyncsvr/dao"
+	"github.com/cclehui/esync/esyncsvr/esyncdao"
 	"github.com/cclehui/esync/esyncutil"
 	"github.com/pkg/errors"
 )
@@ -18,7 +18,7 @@ type EventData struct {
 	EventType   string
 	UniqKey     string
 	EventData   string
-	EventOption *dao.EventOption
+	EventOption *esyncdao.EventOption
 }
 
 func (svc *EventService) AddEvent(ctx context.Context, eventData *EventData) error {
@@ -32,7 +32,7 @@ func (svc *EventService) AddEvent(ctx context.Context, eventData *EventData) err
 
 	eventData.EventOption = svc.getFormatedEventOption(eventData)
 
-	eventDao, err := dao.NewEsyncEventDefaultDao(ctx, &dao.EsyncEventDefaultDao{}, false)
+	eventDao, err := esyncdao.NewEsyncEventDefaultDao(ctx, &esyncdao.EsyncEventDefaultDao{}, false)
 	if err != nil {
 		return err
 	}
@@ -67,11 +67,11 @@ func (svc *EventService) AddEvent(ctx context.Context, eventData *EventData) err
 	return nil
 }
 
-func (svc *EventService) getFormatedEventOption(eventData *EventData) *dao.EventOption {
+func (svc *EventService) getFormatedEventOption(eventData *EventData) *esyncdao.EventOption {
 	result := eventData.EventOption
 
 	if result == nil {
-		result = &dao.EventOption{}
+		result = &esyncdao.EventOption{}
 	}
 
 	if result.DelaySeconds == nil || len(result.DelaySeconds) < 1 {
