@@ -48,16 +48,16 @@ func (myDao *EsyncEventDefaultDao) GetNextRetryDelayDuration() time.Duration {
 
 	handlerInfo, err := myDao.GetHandlerInfo()
 	if err != nil || handlerInfo == nil ||
-		len(handlerInfo.RunTs) < 1 {
+		len(handlerInfo.RunTS) < 1 {
 		// 返回第一个延迟时间
 		return time.Second * time.Duration(eventOption.DelaySeconds[0])
 	}
 
-	if len(handlerInfo.RunTs) >= len(eventOption.DelaySeconds) {
+	if len(handlerInfo.RunTS) >= len(eventOption.DelaySeconds) {
 		return esyncdefine.GetDefaultRetryDelay()
 	}
 
-	lastIndex := len(handlerInfo.RunTs) - 1
+	lastIndex := len(handlerInfo.RunTS) - 1
 	curIndex := lastIndex + 1
 
 	delaySeconds := eventOption.DelaySeconds[curIndex] - eventOption.DelaySeconds[lastIndex]
@@ -92,7 +92,7 @@ func (myDao *EsyncEventDefaultDao) GetTimerKey() interface{} {
 // handler处理的结果
 type HandlerInfo struct {
 	FailCount       int      `json:"fail_count"`
-	RunTs           []int64  `json:"run_ts"`           // 执行的时间戳
+	RunTS           []int64  `json:"run_ts"`           // 执行的时间戳
 	SucceedHandlers []string `json:"succeed_handlers"` // 已成功的handlers
 }
 

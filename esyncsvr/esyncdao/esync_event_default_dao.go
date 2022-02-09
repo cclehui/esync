@@ -23,7 +23,8 @@ type EsyncEventDefaultDao struct {
 	daoBase *daoongorm.DaoBase
 }
 
-func NewEsyncEventDefaultDao(ctx context.Context, myDao *EsyncEventDefaultDao, readOnly bool, options ...daoongorm.Option) (*EsyncEventDefaultDao, error) {
+func NewEsyncEventDefaultDao(ctx context.Context,
+	myDao *EsyncEventDefaultDao, readOnly bool, options ...daoongorm.Option) (*EsyncEventDefaultDao, error) {
 	options = append(options, daoongorm.OptionSetUseCache(false))
 	daoBase, err := daoongorm.NewDaoBase(ctx, myDao, readOnly, options...)
 
@@ -34,7 +35,7 @@ func NewEsyncEventDefaultDao(ctx context.Context, myDao *EsyncEventDefaultDao, r
 
 // 支持事务
 func NewEsyncEventDefaultDaoWithTX(ctx context.Context,
-	myDao *EsyncEventDefaultDao, tx *daoongorm.DBClient, options ...daoongorm.Option) (*EsyncEventDefaultDao, error) {
+	myDao *EsyncEventDefaultDao, tx daoongorm.DBClientInterface, options ...daoongorm.Option) (*EsyncEventDefaultDao, error) {
 	options = append(options, daoongorm.OptionSetUseCache(false))
 
 	daoBase, err := daoongorm.NewDaoBaseWithTX(ctx, myDao, tx, options...)

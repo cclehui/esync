@@ -54,10 +54,12 @@ func timeWheelHandleEvent(handlerParamsIter interface{}) {
 // 有两个入口， 一个是从timewheel上触发， 另一个是从定时的 cron_monitor上触发
 func handleOneEvent(ctx context.Context, handlerParams *HandlerParams) (needRetry bool) {
 	needRetry = true
+
 	var err error
 
 	if handlerParams.EventDefaultDao == nil && handlerParams.EventID < 1 {
 		esyncutil.GetLogger().Errorf(ctx, "handleEvent, error:%s, %+v", "事件参数不正确", handlerParams)
+
 		needRetry = false
 
 		return
@@ -114,6 +116,7 @@ func handleOneEvent(ctx context.Context, handlerParams *HandlerParams) (needRetr
 
 	if handlerParams.EventDefaultDao == nil {
 		esyncutil.GetLogger().Errorf(ctx, "handleEvent, error, EventDefaultDao is nil")
+
 		needRetry = false
 
 		return
@@ -162,7 +165,7 @@ func handleOneEvent(ctx context.Context, handlerParams *HandlerParams) (needRetr
 	}
 
 	// 运行处理的时间记录
-	oldHandlerInfo.RunTs = append(oldHandlerInfo.RunTs, time.Now().Unix())
+	oldHandlerInfo.RunTS = append(oldHandlerInfo.RunTS, time.Now().Unix())
 
 	// 事件状态处理
 
@@ -180,7 +183,7 @@ func handleOneEvent(ctx context.Context, handlerParams *HandlerParams) (needRetr
 		maxAliveTimeDiff := time.Second * time.Duration(eventOption.MaxAliveSeconds)
 
 		startTime := time.Unix(eventOption.StartAt, 0)
-		failTimeDiff := time.Now().Sub(startTime)
+		failTimeDiff := time.Since(startTime)
 
 		if oldHandlerInfo.FailCount >= eventOption.MaxRunNum ||
 			(eventOption.MaxAliveSeconds > 0 && failTimeDiff >= maxAliveTimeDiff) {

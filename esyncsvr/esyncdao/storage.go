@@ -54,7 +54,6 @@ func (s *Storage) initRedis() {
 					c.Close()
 					return nil, err
 				}
-
 			}
 
 			return c, nil
